@@ -1,7 +1,7 @@
 // Supabase 대시보드 > Project Settings > API 에서 복사해 넣으세요.
 // anon(publishable) 키는 브라우저에 공개되어도 되는 키입니다. (보안은 RLS가 담당)
-const SUPABASE_URL = 'https://YOUR-PROJECT.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR-ANON-KEY';
+const SUPABASE_URL = 'https://wvnxetotipjcokpzxgwm.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_x12tECT4Alhvz-h-0meJtQ_u1q64YzA';
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
