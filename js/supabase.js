@@ -25,15 +25,17 @@ async function renderNav() {
   const el = document.getElementById('auth-menu');
   if (!el) return;
   const { data: { user } } = await db.auth.getUser();
+  const adminLink = '<a href="admin.html" class="admin-link">관리자 로그인</a>';
   if (user) {
-    el.innerHTML = `<span>${escapeHtml(user.email)}</span> <a href="#" id="logout">로그아웃</a>`;
+    el.innerHTML = `<span>${escapeHtml(user.email)}</span> <a href="#" id="logout">로그아웃</a> ${adminLink}`;
     document.getElementById('logout').onclick = async (e) => {
       e.preventDefault();
       await db.auth.signOut();
       location.href = 'index.html';
     };
   } else {
-    el.innerHTML = '<a href="login.html">로그인</a>';
+    el.innerHTML = `<a href="login.html">로그인</a> ${adminLink}`;
   }
 }
-renderNav();
+// 이 파일은 <head>에서 불러오므로, 화면(HTML)이 다 만들어진 뒤에 실행
+document.addEventListener('DOMContentLoaded', renderNav);
