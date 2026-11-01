@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>공지사항</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="js/supabase.js"></script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="links">
+      <a href="index.html" class="active">공지사항</a>
+      <a href="board.html">자유게시판</a>
+    </div>
+    <div id="auth-menu"></div>
+  </nav>
+
+  <main class="container">
+    <p class="eyebrow">KOPO NEWS</p>
+    <h1 class="title">공지사항</h1>
+
+    <div class="card detail">
+      <h2 id="title">불러오는 중...</h2>
+      <div class="info" id="info"></div>
+      <div class="body" id="body"></div>
+      <div class="btn-row">
+        <a class="btn gray" href="index.html">목록</a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    async function loadNotice() {
+      const id = new URLSearchParams(location.search).get('id');
+      const { data, error } = await db.from('notices').select('*').eq('id', id).single();
+
+      if (error) { document.getElementById('title').textContent = '공지사항을 찾을 수 없습니다.'; return; }
+      document.getElementById('title').textContent = data.title;
+      document.getElementById('info').textContent = formatDate(data.created_at);
+      document.getElementById('body').textContent = data.content;
+    }
+    loadNotice();
+  </script>
+</body>
+</html>

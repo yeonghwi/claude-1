@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>로그인 / 회원가입</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="js/supabase.js"></script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="links">
+      <a href="index.html">공지사항</a>
+      <a href="board.html">자유게시판</a>
+    </div>
+    <div id="auth-menu"></div>
+  </nav>
+
+  <main class="container" style="max-width: 480px;">
+    <p class="eyebrow">KOPO NEWS</p>
+    <h1 class="title">로그인</h1>
+
+    <div class="card">
+      <form id="auth-form">
+        <input type="email" id="email" placeholder="이메일" required>
+        <input type="password" id="password" placeholder="비밀번호 (6자 이상)" minlength="6" required>
+        <button class="btn" type="submit" id="login-btn">로그인</button>
+        <button class="btn gray" type="button" id="signup-btn">회원가입</button>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    const email = document.getElementById('email');
+    const password = document.getElementById('password');
+
+    // 로그인
+    document.getElementById('auth-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const { error } = await db.auth.signInWithPassword({
+        email: email.value,
+        password: password.value,
+      });
+      if (error) { alert('로그인 실패: ' + error.message); return; }
+      location.href = 'board.html';
+    };
+
+    // 회원가입
+    document.getElementById('signup-btn').onclick = async () => {
+      if (!email.reportValidity() || !password.reportValidity()) return;
+      const { data, error } = await db.auth.signUp({
+        email: email.value,
+        password: password.value,
+      });
+      if (error) { alert('회원가입 실패: ' + error.message); return; }
+
+      if (data.session) {
+        alert('회원가입 완료!');
+        location.href = 'board.html';
+      } else {
+        // Supabase 설정에서 이메일 인증이 켜져 있으면 세션이 바로 생기지 않음
+        alert('가입 확인 메일을 보냈습니다. 메일의 링크를 누른 뒤 로그인하세요.');
+      }
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>자유게시판</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="js/supabase.js"></script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="links">
+      <a href="index.html">공지사항</a>
+      <a href="board.html" class="active">자유게시판</a>
+    </div>
+    <div id="auth-menu"></div>
+  </nav>
+
+  <main class="container">
+    <p class="eyebrow">KOPO BOARD</p>
+    <h1 class="title">자유게시판</h1>
+
+    <div class="card detail">
+      <h2 id="title">불러오는 중...</h2>
+      <div class="info" id="info"></div>
+      <div class="body" id="body"></div>
+      <div class="btn-row">
+        <button class="btn red hidden" id="delete-btn">삭제</button>
+        <a class="btn gray" href="board.html">목록</a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const id = new URLSearchParams(location.search).get('id');
+
+    async function loadPost() {
+      const { data, error } = await db.from('posts').select('*').eq('id', id).single();
+      if (error) { document.getElementById('title').textContent = '글을 찾을 수 없습니다.'; return; }
+
+      document.getElementById('title').textContent = data.title;
+      document.getElementById('info').textContent = `${data.author_email ?? ''} · ${formatDate(data.created_at)}`;
+      document.getElementById('body').textContent = data.content;
+
+      // 내가 쓴 글이면 삭제 버튼 표시 (실제 권한 검사는 DB의 RLS가 함)
+      const { data: { user } } = await db.auth.getUser();
+      if (user && user.id === data.user_id) {
+        document.getElementById('delete-btn').classList.remove('hidden');
+      }
+    }
+
+    document.getElementById('delete-btn').onclick = async () => {
+      if (!confirm('삭제하시겠습니까?')) return;
+      const { error } = await db.from('posts').delete().eq('id', id);
+      if (error) { alert('삭제 실패: ' + error.message); return; }
+      location.href = 'board.html';
+    };
+
+    loadPost();
+  </script>
+</body>
+</html>

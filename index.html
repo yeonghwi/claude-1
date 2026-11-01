@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>폴리텍 뉴스 - 공지사항</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="js/supabase.js"></script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="links">
+      <a href="index.html" class="active">공지사항</a>
+      <a href="board.html">자유게시판</a>
+    </div>
+    <div id="auth-menu"></div>
+  </nav>
+
+  <main class="container">
+    <p class="eyebrow">KOPO NEWS</p>
+    <h1 class="title">폴리텍 뉴스</h1>
+
+    <div class="card">
+      <ul class="list" id="notice-list">
+        <li class="empty">불러오는 중...</li>
+      </ul>
+    </div>
+  </main>
+
+  <script>
+    async function loadNotices() {
+      const { data, error } = await db
+        .from('notices')
+        .select('id, title, created_at')
+        .order('created_at', { ascending: false });
+
+      const list = document.getElementById('notice-list');
+      if (error) { list.innerHTML = `<li class="empty">오류: ${escapeHtml(error.message)}</li>`; return; }
+      if (data.length === 0) { list.innerHTML = '<li class="empty">등록된 공지사항이 없습니다.</li>'; return; }
+
+      list.innerHTML = data.map(n => `
+        <li>
+          <a href="notice.html?id=${n.id}">
+            <span class="badge">공지</span>
+            <span class="subject">${escapeHtml(n.title)}</span>
+            <span class="date">${formatDate(n.created_at)}</span>
+          </a>
+        </li>
+      `).join('');
+    }
+    loadNotices();
+  </script>
+</body>
+</html>

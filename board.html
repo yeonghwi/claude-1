@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>자유게시판</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="js/supabase.js"></script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="links">
+      <a href="index.html">공지사항</a>
+      <a href="board.html" class="active">자유게시판</a>
+    </div>
+    <div id="auth-menu"></div>
+  </nav>
+
+  <main class="container">
+    <p class="eyebrow">KOPO BOARD</p>
+    <h1 class="title">자유게시판</h1>
+
+    <!-- 글쓰기 : 로그인한 회원에게만 보임 -->
+    <div class="card hidden" id="write-card" style="margin-bottom: 24px;">
+      <form id="write-form">
+        <input type="text" id="title" placeholder="제목" required>
+        <textarea id="content" placeholder="내용" required></textarea>
+        <button class="btn" type="submit">글쓰기</button>
+      </form>
+    </div>
+    <p class="hidden" id="login-hint">글을 쓰려면 <a href="login.html"><b>로그인</b></a> 하세요.</p>
+
+    <div class="card">
+      <ul class="list" id="post-list">
+        <li class="empty">불러오는 중...</li>
+      </ul>
+    </div>
+  </main>
+
+  <script>
+    async function loadPosts() {
+      const { data, error } = await db
+        .from('posts')
+        .select('id, title, author_email, created_at')
+        .order('created_at', { ascending: false });
+
+      const list = document.getElementById('post-list');
+      if (error) { list.innerHTML = `<li class="empty">오류: ${escapeHtml(error.message)}</li>`; return; }
+      if (data.length === 0) { list.innerHTML = '<li class="empty">첫 글을 남겨보세요!</li>'; return; }
+
+      list.innerHTML = data.map(p => `
+        <li>
+          <a href="post.html?id=${p.id}">
+            <span class="badge free">자유</span>
+            <span class="subject">${escapeHtml(p.title)}</span>
+            <span class="meta">${escapeHtml(p.author_email ?? '')}</span>
+            <span class="date">${formatDate(p.created_at)}</span>
+          </a>
+        </li>
+      `).join('');
+    }
+
+    async function init() {
+      const { data: { user } } = await db.auth.getUser();
+      document.getElementById(user ? 'write-card' : 'login-hint').classList.remove('hidden');
+      loadPosts();
+    }
+
+    document.getElementById('write-form').onsubmit = async (e) => {
+      e.preventDefault();
+      // user_id, author_email 은 DB 기본값(로그인 정보)으로 자동 저장됨
+      const { error } = await db.from('posts').insert({
+        title: document.getElementById('title').value,
+        content: document.getElementById('content').value,
+      });
+      if (error) { alert('저장 실패: ' + error.message); return; }
+      e.target.reset();
+      loadPosts();
+    };
+
+    init();
+  </script>
+</body>
+</html>
